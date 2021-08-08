@@ -340,7 +340,18 @@ class Sim(cvb.BaseSim):
         self.results_ready   = False
 
         return
+    
+    def pathProvided(self, popfile=None):
+        '''
+        Determine if the file path is provided.
 
+        Args:
+            popfile (str or obj): if a string, name of the file; otherwise, the popdict or People object to load
+        '''
+        if popfile is None and self.popfile is not None:
+            return false
+        elif popfile is not None:
+            return true
 
     def load_population(self, popfile=None, **kwargs):
         '''
@@ -356,11 +367,11 @@ class Sim(cvb.BaseSim):
             kwargs (dict): passed to sc.makefilepath()
         '''
         # Set the file path if not is provided
-        if popfile is None and self.popfile is not None:
+        if not pathProvided(popfile):
             popfile = self.popfile
 
         # Handle the population (if it exists)
-        if popfile is not None:
+        if pathProvided(popfile):
 
             # Load from disk or use directly
             if isinstance(popfile, str): # It's a string, assume it's a filename
