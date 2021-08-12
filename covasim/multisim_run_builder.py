@@ -5,7 +5,7 @@ class IBuilder(metaclass=ABCMeta):
 
     @staticmethod
     @abstractmethod
-    def build_sim(self, reduce=False, combine=False, **kwargs):
+    def build_run(self, reduce=False, combine=False, **kwargs):
         '''
         Run the actual sims
 
@@ -28,18 +28,15 @@ class IBuilder(metaclass=ABCMeta):
         else:
             sims = self.sims
 
-    # def build_run(self, reduce=False, combine=False, **kwargs):
         # Run
         kwargs = sc.mergedicts(self.run_args, kwargs)
         self.sims = multi_run(sims, **kwargs)
 
-    # def reduce(self, reduce=False, combine=False, **kwargs):
         # Reduce or combine
         if reduce:
             self.reduce()
         elif combine:
             self.combine()
-
 
         return run
 
@@ -64,8 +61,3 @@ class Director:
     def construct():
         return IBuilder()\
         .build_sim()
-        # .get_result()
-
-# PRODUCT = Director.construct()
-
-# print(PRODUCT)

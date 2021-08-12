@@ -12,7 +12,7 @@ from . import defaults as cvd
 from . import base as cvb
 from . import sim as cvs
 from . import plotting as cvplt
-from . import multisim_run as run
+from . import multisim_run_builder as run
 from .settings import options as cvo
 
 
@@ -141,8 +141,7 @@ class MultiSim(cvb.FlexPretty):
 
 
     def run(self, reduce=False, combine=False, **kwargs):
-        IBuilder.build_sim()
-        Builder.get_result()
+        # returns the result from the builder file
         return Builder.get_result()
 
 
