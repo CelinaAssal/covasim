@@ -13,6 +13,7 @@ from . import base as cvb
 from . import sim as cvs
 from . import plotting as cvplt
 from .settings import options as cvo
+from abc import ABCMeta, abstractmethod
 
 
 # Specify all externally visible functions this file defines
@@ -33,8 +34,17 @@ def make_metapars():
     return metapars
 
 
-class MultiSim(cvb.FlexPretty):
+class MultiSimInterface(metaclass=ABCMeta):
+    "An interface for an object"
+    @staticmethod
+    @abstractmethod
+    def multisim_method():
+        # Abstract method in the MultiSimInterface
+        pass
+
+class MultiSim(MultiSimInterface, cvb.FlexPretty):
     '''
+    A Class that implements the MultiSimInterface.
     Class for running multiple copies of a simulation. The parameter n_runs
     controls how many copies of the simulation there will be, if a list of sims
     is not provided. This is the main class that's used to run multiple versions
@@ -852,9 +862,17 @@ class MultiSim(cvb.FlexPretty):
             raise RuntimeError(errormsg)
         return self.base_sim.to_excel(*args, **kwargs)
 
+class ScenariosInterface(metaclass=ABCMeta):
+    "An interface for an object"
+    @staticmethod
+    @abstractmethod
+    def scenarios_method():
+        # Abstract method in the ScenariosInterface
+        pass
 
-class Scenarios(cvb.ParsObj):
+class Scenarios(ScenariosInterface, cvb.ParsObj):
     '''
+    A Class that implements the ScenariosInterface
     Class for running multiple sets of multiple simulations -- e.g., scenarios.
     Note that most users are recommended to use MultiSim rather than Scenarios,
     as it gives more control over run options. Scenarios should be used primarily
@@ -1469,19 +1487,19 @@ def multi_run(sim, n_runs=4, reseed=True, noise=0.0, noisepar=None, iterpars=Non
         except RuntimeError as E: # Handle if run outside of __main__ on Windows
             if 'freeze_support' in E.args[0]: # For this error, add additional information
                 errormsg = '''
- Uh oh! It appears you are trying to run with multiprocessing on Windows outside
- of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
- for more information. The correct syntax to use is e.g.
+                Uh oh! It appears you are trying to run with multiprocessing on Windows outside
+                of the __main__ block; please see https://docs.python.org/3/library/multiprocessing.html
+                for more information. The correct syntax to use is e.g.
 
-     import covasim as cv
-     sim = cv.Sim()
-     msim = cv.MultiSim(sim)
+                    import covasim as cv
+                    sim = cv.Sim()
+                    msim = cv.MultiSim(sim)
 
-     if __name__ == '__main__':
-         msim.run()
+                    if __name__ == '__main__':
+                        msim.run()
 
-Alternatively, to run without multiprocessing, set parallel=False.
- '''
+                Alternatively, to run without multiprocessing, set parallel=False.
+                '''
                 raise RuntimeError(errormsg) from E
             else: # For all other runtime errors, raise the original exception
                 raise E
@@ -1496,3 +1514,14 @@ Alternatively, to run without multiprocessing, set parallel=False.
             sims.append(sim)
 
     return sims
+
+
+class ClassScenariosAdapter(MultiSimInterface):
+    "Scenarios class does not have a multisim_method. This adapter allows the Scenarios class to use the multisim_method from the MultiSim class"
+
+    def __init__(self):
+        self.ScenariosClass = ScenariosClass()
+
+    def multisim_method(self):
+        "calls the class Scenarios scenarios_method instead"
+        self.ScenariosClass.scenarios_method()
