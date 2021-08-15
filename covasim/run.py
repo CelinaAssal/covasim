@@ -12,6 +12,7 @@ from . import defaults as cvd
 from . import base as cvb
 from . import sim as cvs
 from . import plotting as cvplt
+from . import multisim_run_builder as run
 from .settings import options as cvo
 
 
@@ -140,45 +141,13 @@ class MultiSim(cvb.FlexPretty):
 
 
     def run(self, reduce=False, combine=False, **kwargs):
-        '''
-        Run the actual sims
-
-        Args:
-            reduce  (bool): whether or not to reduce after running (see reduce())
-            combine (bool): whether or not to combine after running (see combine(), not compatible with reduce)
-            kwargs  (dict): passed to multi_run(); use run_args to pass arguments to sim.run()
-
-        Returns:
-            None (modifies MultiSim object in place)
-
-        **Examples**::
-
-            msim.run()
-            msim.run(run_args=dict(until='2020-0601', restore_pars=False))
-        '''
-        # Handle which sims to use -- same as init_sims()
-        if self.sims is None:
-            sims = self.base_sim
-        else:
-            sims = self.sims
-
-        # Run
-        kwargs = sc.mergedicts(self.run_args, kwargs)
-        self.sims = multi_run(sims, **kwargs)
-
-        # Reduce or combine
-        if reduce:
-            self.reduce()
-        elif combine:
-            self.combine()
-
-        return self
+        # returns the result from the builder file
+        return Builder.get_result()
 
 
     def _has_orig_sim(self):
         ''' Helper method for determining if an original base sim is present '''
         return hasattr(self, 'orig_base_sim')
-
 
     def _rm_orig_sim(self, reset=False):
         ''' Helper method for removing the original base sim, if present '''
