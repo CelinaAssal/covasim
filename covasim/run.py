@@ -13,6 +13,7 @@ from . import base as cvb
 from . import sim as cvs
 from . import plotting as cvplt
 from .settings import options as cvo
+from . import IObservable, Observer
 
 
 # Specify all externally visible functions this file defines
@@ -876,6 +877,22 @@ class Scenarios(cvb.ParsObj):
         scens: a Scenarios object
     '''
 
+    # creating a list of observers
+    _observers: List[Observer] = []
+
+    # subscribing an observer
+    def subscribe(observer):
+        self._observers.append(observer)
+
+    def unsubscribe(observer):
+        self._observers.remove(observer)
+
+    # notifying for an event
+    def notify(observer):
+        # notifying each subscriber
+        for observer in self._observers:
+            observer.update(self)
+
     def __init__(self, sim=None, metapars=None, scenarios=None, basepars=None, scenfile=None, label=None):
 
         # For this object, metapars are the foundation
@@ -885,6 +902,7 @@ class Scenarios(cvb.ParsObj):
 
         # Handle filename
         if scenfile is None:
+            self.notify()
             datestr = sc.getdate(obj=self.created, dateformat='%Y-%b-%d_%H.%M.%S')
             scenfile = f'covasim_scenarios_{datestr}.scens'
         self.scenfile = scenfile
@@ -892,6 +910,7 @@ class Scenarios(cvb.ParsObj):
 
         # Handle scenarios -- by default, create the simplest possible baseline scenario
         if scenarios is None:
+            self.notify()
             scenarios = {'baseline':{'name':'Baseline', 'pars':{}}}
         self.scenarios = scenarios
 
@@ -901,12 +920,14 @@ class Scenarios(cvb.ParsObj):
 
         # Create the simulation and handle basepars
         if sim is None:
+            self.notify()
             sim = cvs.Sim()
         self.base_sim = sc.dcp(sim)
         self.basepars = sc.dcp(sc.mergedicts(basepars))
         self.base_sim.update_pars(self.basepars)
         self.base_sim.validate_pars()
         if not self.base_sim.initialized:
+            self.notify()
             self.base_sim.init_variants()
             self.base_sim.init_immunity()
             self.base_sim.init_results()
