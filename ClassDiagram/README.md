@@ -1,0 +1,1 @@
+![Image of class diagram](https://github.com/CelinaAssal/covasim/blob/e2738898c26280fe25f4d2624c2b406c2be4be5c/ClassDiagram/class_diagram.png)
